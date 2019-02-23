@@ -134,7 +134,7 @@ app.get('/dashboard', function(req, res, next) {
             where: {userid: req.session.user.id}
         })
             .then(function (entrees) {
-                res.render('dashboard', {title: 'Dashboard', heading: 'Dashboard', entrees: entrees});
+                res.render('dashboard', {title: 'Dashboard', heading: 'Dashboard', entrees: listOutput(entrees)});
             });
     }
     else { res.redirect('/login'); }
@@ -174,3 +174,17 @@ var port = process.env.PORT || 8080;
 
 // start the express server
 app.listen(port, () => console.log(`App started on port ${port}`));
+
+function listOutput(listObj) {
+
+    var out = "<ul>";
+
+    listObj.forEach(function(element) {
+        out += "<li>" + element.get("content") + "<br /><i>entered on: " + element.get("createdAt") + "</i></li>";
+    });
+
+
+    out += "</ul>";
+
+    return out;
+}
