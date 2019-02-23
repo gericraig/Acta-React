@@ -74,20 +74,12 @@ var sessionChecker = (req, res, next) => {
 };
 
 app.get('/', function(req, res) {
-    res.render('home', {
-        title: 'React Engine Demo',
-        name: 'Home',
-        selection: 'header-home'
+    res.render('dashboard', {
+        title: 'Dashboard',
+        name: 'Dashboard'
     });
 });
 
-app.get('/page2', function(req, res) {
-    res.render('page2', {
-        title: 'React Engine Demo',
-        name: 'Page 2',
-        selection: 'header-page2'
-    });
-});
 
 app.get('/add', function(req, res) {
     res.render('add', {
