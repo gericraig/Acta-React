@@ -1,5 +1,4 @@
-// make `.jsx` file requirable by node
-require('node-jsx').install();
+require('node-jsx').install({extension: '.jsx'})
 
 var path = require('path');
 var express = require('express');
@@ -8,6 +7,12 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var morgan = require('morgan');
+
+var Sequelize = require('sequelize');
+var sequelize = new Sequelize('mysql://ruzbr64gyqulrclw:bk7a5ftha8oloopx@z1ntn1zv0f1qbh8u.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/fy2di9gjooiln47y');
+
+var User = require('./models/user');
+var Entree = require('./models/entree');
 
 
 var app = express();
@@ -73,41 +78,89 @@ var sessionChecker = (req, res, next) => {
     }
 };
 
-app.get('/', function(req, res) {
-    res.render('dashboard', {
-        title: 'Dashboard',
-        name: 'Dashboard'
-    });
+// route for Home-Page
+app.get('/', sessionChecker, (req, res) => {
+    res.redirect('/login');
 });
 
 
-app.get('/add', function(req, res) {
-    res.render('add', {
-        title: 'Add',
-        name: 'Add'
-    });
+
+app.get('/add', function(req, res, next) {
+    if (req.session.user && req.cookies.user_sid) {
+        res.render('add', {title: 'Add', name: 'Add'});
+    }
+    else { res.redirect('/login'); }
 });
 
-app.get('/login', function(req, res) {
-    res.render('login', {
-        title: 'Login',
-        name: 'Login'
-    });
+app.post('/add', function(req, res, next) {
+    if (req.session.user && req.cookies.user_sid) {
+        Entree.create({
+            userid: req.session.user.id,
+            content: req.body.content
+        })
+            .then(user => {
+                res.redirect('/dashboard');
+            })
+            .catch(error => {
+                console.warn(error);
+                res.redirect('/signup');
+            });
+    }
+    else { res.redirect('/login'); }
 });
 
-app.get('/dashboard', function(req, res) {
-    res.render('dashboard', {
-        title: 'Dashboard',
-        name: 'Dashboard'
+// route for user Login
+app.route('/login')
+    .get(sessionChecker, (req, res) => {
+        res.render('login', { title: 'Login', name: 'Login' });
+    })
+    .post((req, res) => {
+        var username = req.body.username,
+            password = req.body.password;
+
+        User.findOne({ where: { username: username } }).then(function (user) {
+            if (!user) {
+                res.redirect('/login');
+            } else if (!user.validPassword(password)) {
+                res.redirect('/login');
+            } else {
+                req.session.user = user.dataValues;
+                res.redirect('/dashboard');
+            }
+        });
     });
+
+app.get('/dashboard', function(req, res, next) {
+    if (req.session.user && req.cookies.user_sid) {
+        Entree.findAll({
+            where: {userid: req.session.user.id}
+        })
+            .then(function (entrees) {
+                res.render('dashboard', {title: 'Dashboard', heading: 'Dashboard', entrees: entrees});
+            });
+    }
+    else { res.redirect('/login'); }
 });
 
-app.get('/signup', function(req, res) {
-    res.render('signup', {
-        title: 'Signup',
-        name: 'Signup'
+app.route('/signup')
+    .get(sessionChecker, (req, res) => {
+        res.render('signup', { title: 'ACTA REACT- Signup', name: 'Signup' });
+    })
+    .post((req, res) => {
+        User.create({
+            username: req.body.username,
+            email: req.body.email,
+            password: req.body.password
+        })
+            .then(user => {
+                req.session.user = user.dataValues;
+                res.redirect('/dashboard');
+            })
+            .catch(error => {
+                res.redirect('/signup');
+            });
     });
-});
+
 
 // route for user logout
 app.get('/logout', (req, res) => {
