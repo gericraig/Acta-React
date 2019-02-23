@@ -127,5 +127,7 @@ app.get('/logout', (req, res) => {
     }
 });
 
+var port = process.env.PORT || 8080;
+
 // start the express server
 app.listen(port, () => console.log(`App started on port ${port}`));
