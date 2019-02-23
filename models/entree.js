@@ -1,6 +1,6 @@
 var Sequelize = require('sequelize');
 // create a sequelize instance with our local postgres database information.
-var sequelize = new Sequelize('mysql://ruzbr64gyqulrclw:bk7a5ftha8oloopx@z1ntn1zv0f1qbh8u.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/fy2di9gjooiln47y');
+var sequelize = new Sequelize('postgres://aykwjkjxkpptab:ef229592250b0dde4a00d7434bce4dc6a72f64c0f3b1dd1194d8abf878106de1@ec2-107-21-224-76.compute-1.amazonaws.com:5432/da3366ftf8phno');
 
 // setup User model and its fields.
 var Entree = sequelize.define('entrees', {
